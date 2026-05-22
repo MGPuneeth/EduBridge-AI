@@ -35,14 +35,40 @@ export interface SkillGap {
   gap: number;
 }
 
+export interface SkillImprovement {
+  skill: string;
+  currentScore: number;
+  reason: string;
+}
+
 export interface CareerRecommendation {
   rank: number;
   role: string;
+  compatibility?: number;
   compatibility_score: number;
   readiness_label: string;
   demand_score: number;
   description: string;
   skill_gap: SkillGap[];
+  marketDemand?: number;
+  semanticScore?: number;
+  interestAlignment?: number;
+  finalScore?: number;
+  salaryRange?: { min: number; max: number } | null;
+  marketTrend?: {
+    totalJobs: number;
+    remotePercentage: number;
+    trendingSkills: string[];
+  };
+  missingSkills?: string[];
+  final_hybrid_score?: number;
+  market_demand?: number;
+  salary_min?: number;
+  salary_max?: number;
+  interest_alignment?: number;
+  semantic_match?: number;
+  trending_skills?: string[];
+  explanation?: string;
 }
 
 export interface AssessmentResults {
@@ -53,7 +79,13 @@ export interface AssessmentResults {
     tier_breakdown: Record<string, { correct: number; total: number; score: number }>;
     per_skill_breakdown: any[];
   };
-  recommendations: CareerRecommendation[];
+  recommendations: {
+    recommendations: CareerRecommendation[];
+    top_recommendation?: string | null;
+    overall_level?: string;
+    skillsToImprove?: SkillImprovement[];
+  } | CareerRecommendation[];
+  skillsToImprove?: SkillImprovement[];
 }
 
 export interface SyncUserPayload {
@@ -61,6 +93,8 @@ export interface SyncUserPayload {
   email: string;
   oauthId: string;
   provider: string;
+  interests?: string[];
+  education?: string;
 }
 
 export interface SyncUserResponse {

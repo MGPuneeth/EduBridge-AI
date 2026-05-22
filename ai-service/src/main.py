@@ -20,18 +20,21 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
-    if not os.getenv("GEMINI_API_KEY") and not os.getenv("GROQ_API_KEY"):
-        raise RuntimeError("Set either GEMINI_API_KEY or GROQ_API_KEY before starting the AI service.")
+    ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    model = os.getenv("OLLAMA_MODEL", "qwen2.5:3b")
+    fallback_model = os.getenv("OLLAMA_FALLBACK_MODEL", "llama3:latest")
+    print(f"[startup] Ollama configured at {ollama_url} with model={model}, fallback={fallback_model}")
 
 @app.get("/health")
 async def health_check():
-    providers = []
-    if os.getenv("GEMINI_API_KEY"):
-        providers.append("gemini-2.5-flash")
-    if os.getenv("GROQ_API_KEY"):
-        providers.append(os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"))
-
-    return {"status": "ok", "models": providers}
+    return {
+        "status": "ok",
+        "ollamaUrl": os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+        "models": [
+            os.getenv("OLLAMA_MODEL", "qwen2.5:3b"),
+            os.getenv("OLLAMA_FALLBACK_MODEL", "llama3:latest"),
+        ],
+    }
 
 app.include_router(questions.router, prefix="/api", tags=["questions"])
 app.include_router(scoring.router, prefix="/api", tags=["scoring"])

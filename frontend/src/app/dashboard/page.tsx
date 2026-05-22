@@ -20,6 +20,14 @@ function mapToRecord<T>(value: Record<string, T> | Map<string, T> | undefined): 
   return value;
 }
 
+function getAuthProvider(user: any) {
+  return user.provider || "github";
+}
+
+function getOAuthId(user: any) {
+  return user.providerAccountId || user.id || user.email || "";
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -41,8 +49,8 @@ export default function DashboardPage() {
         const syncRes = await syncUser({
           name: user.name || "Unknown",
           email: user.email || "",
-          oauthId: user.id || user.email || "",
-          provider: "google"
+          oauthId: getOAuthId(user),
+          provider: getAuthProvider(user)
         });
 
         sessionStorage.setItem("userId", syncRes.userId);

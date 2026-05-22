@@ -5,6 +5,8 @@ import morgan from 'morgan';
 import usersRoutes from './routes/users';
 import assessmentRoutes from './routes/assessment';
 import careersRoutes from './routes/careers';
+import marketRoutes from './routes/market';
+import recommendationsRoutes from './routes/recommendations';
 
 const app = express();
 
@@ -17,6 +19,8 @@ app.use(morgan('dev'));
 app.use('/api/users', usersRoutes);
 app.use('/api/assessment', assessmentRoutes);
 app.use('/api/careers', careersRoutes);
+app.use('/api/market', marketRoutes);
+app.use('/api/recommendations', recommendationsRoutes);
 
 // Global Error Handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

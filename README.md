@@ -5,7 +5,7 @@ EduBridge AI is a monorepo containing a full-stack assessment and career recomme
 ## Architecture
 - **Frontend**: Next.js 14 App Router, TypeScript, Tailwind CSS, Auth.js v5
 - **Backend**: Node.js + Express + MongoDB (TypeScript)
-- **AI Service**: Python FastAPI + Anthropic Claude API
+- **AI Service**: Python FastAPI + Ollama
 - **Workflow Automation**: n8n
 
 ## Getting Started

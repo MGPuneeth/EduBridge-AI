@@ -13,6 +13,40 @@ function cn(...inputs: (string | undefined | null | false)[]) {
 }
 
 const SKIPPED_ANSWER = "__SKIPPED__";
+const OPTION_KEYS = ["A", "B", "C", "D"] as const;
+
+function normalizeStoredQuestions(value: string): Question[] {
+  const parsed = JSON.parse(value);
+  if (!Array.isArray(parsed)) return [];
+
+  return parsed.flatMap((item: any) => {
+    const options = item?.options;
+    const correctAnswer = String(item?.correct_answer || item?.correctAnswer || "").toUpperCase();
+
+    if (
+      typeof item?.question !== "string" ||
+      !options ||
+      !OPTION_KEYS.every((key) => typeof options[key] === "string" && options[key].trim()) ||
+      !OPTION_KEYS.includes(correctAnswer as any)
+    ) {
+      return [];
+    }
+
+    return [{
+      question: item.question,
+      options: {
+        A: options.A,
+        B: options.B,
+        C: options.C,
+        D: options.D,
+      },
+      skill: String(item.skill || "General"),
+      difficulty: (["beginner", "intermediate", "expert"].includes(item.difficulty) ? item.difficulty : "beginner") as Question["difficulty"],
+      correct_answer: correctAnswer,
+      explanation: item.explanation,
+    } as Question];
+  });
+}
 
 function renderTextWithCode(text: string) {
   const parts = text.split(/```([\s\S]*?)```/g);
@@ -46,13 +80,34 @@ export default function QuestionsPage() {
       router.replace("/assess");
       return;
     }
-    setQuestions(JSON.parse(storedQuestions));
+    try {
+      const normalizedQuestions = normalizeStoredQuestions(storedQuestions);
+      if (normalizedQuestions.length === 0) {
+        throw new Error("No valid questions were found.");
+      }
+      setQuestions(normalizedQuestions);
+    } catch (err) {
+      console.error("Invalid assessment questions payload:", err);
+      setError("Question data was invalid. Please start the assessment again.");
+    }
   }, [router]);
 
   if (questions.length === 0) {
     return (
-      <div className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-slate-50">
-        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+      <div className="min-h-[calc(100vh-64px)] flex flex-col items-center justify-center gap-4 bg-slate-50 px-4 text-center">
+        {error ? (
+          <>
+            <p className="max-w-md text-sm font-medium text-red-700">{error}</p>
+            <button
+              onClick={() => router.replace("/assess")}
+              className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-blue-700"
+            >
+              Restart Assessment
+            </button>
+          </>
+        ) : (
+          <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+        )}
       </div>
     );
   }
@@ -153,7 +208,7 @@ export default function QuestionsPage() {
             Question {currentIndex + 1} of {questions.length}
           </span>
           <span className="text-xs font-medium text-slate-500 bg-white px-2 py-1 rounded-md border">
-            {currentQ.skill} • <span className="capitalize">{currentQ.difficulty}</span>
+            {currentQ.skill} / <span className="capitalize">{currentQ.difficulty}</span>
           </span>
         </div>
         <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
@@ -182,7 +237,8 @@ export default function QuestionsPage() {
         )}
 
         <div className="space-y-3">
-          {Object.entries(currentQ.options).map(([key, value]) => {
+          {OPTION_KEYS.map((key) => {
+            const value = currentQ.options[key];
             const isSelected = answers[currentIndex] === key;
             return (
               <button

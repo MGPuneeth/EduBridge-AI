@@ -34,6 +34,12 @@ def determine_tier(beginner_score: float, intermediate_score: float, expert_scor
         return "professional"
     return "beginner"
 
+def clamp_score(value: float) -> int:
+    try:
+        return max(0, min(100, round(float(value))))
+    except (TypeError, ValueError):
+        return 0
+
 @router.post("/score-assessment")
 async def score_assessment(request: ScoreAssessmentRequest):
     skill_stats = {}
@@ -45,9 +51,9 @@ async def score_assessment(request: ScoreAssessmentRequest):
     }
     
     for ans in request.answers:
-        skill = ans.skill
+        skill = ans.skill.strip() or "General"
         diff = ans.difficulty.lower()
-        is_correct = ans.user_answer == ans.correct_answer
+        is_correct = ans.user_answer.strip().upper() == ans.correct_answer.strip().upper()
         
         if skill not in skill_stats:
             skill_stats[skill] = {
@@ -86,15 +92,15 @@ async def score_assessment(request: ScoreAssessmentRequest):
         total_possible = (b_total * 1) + (i_total * 2) + (e_total * 3)
         
         weighted_score = (total_earned / total_possible * 100) if total_possible > 0 else 0
-        weighted_score = round(weighted_score)
+        weighted_score = clamp_score(weighted_score)
         
         skill_scores[skill] = weighted_score
         per_skill_breakdown.append({
             "skill": skill,
             "level": level,
-            "beginner_score": round(b_score),
-            "intermediate_score": round(i_score),
-            "expert_score": round(e_score),
+            "beginner_score": clamp_score(b_score),
+            "intermediate_score": clamp_score(i_score),
+            "expert_score": clamp_score(e_score),
             "weighted_score": weighted_score
         })
         
@@ -111,13 +117,13 @@ async def score_assessment(request: ScoreAssessmentRequest):
     total_g_earned = (global_stats["beginner"]["correct"] * 1) + (global_stats["intermediate"]["correct"] * 2) + (global_stats["expert"]["correct"] * 3)
     total_g_possible = (g_b_total * 1) + (g_i_total * 2) + (g_e_total * 3)
     
-    overall_score = round((total_g_earned / total_g_possible * 100) if total_g_possible > 0 else 0)
+    overall_score = clamp_score((total_g_earned / total_g_possible * 100) if total_g_possible > 0 else 0)
     
     tier_breakdown = {
         diff: {
             "correct": data["correct"],
             "total": data["total"],
-            "score": round((data["correct"] / data["total"] * 100) if data["total"] > 0 else 0)
+            "score": clamp_score((data["correct"] / data["total"] * 100) if data["total"] > 0 else 0)
         }
         for diff, data in global_stats.items()
     }

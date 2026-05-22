@@ -12,7 +12,9 @@ router.post(
     body('name').notEmpty().withMessage('Name is required'),
     body('email').isEmail().withMessage('Valid email is required'),
     body('oauthId').notEmpty().withMessage('OAuth ID is required'),
-    body('provider').isIn(['google', 'github', 'microsoft', 'facebook', 'linkedin']).withMessage('Valid provider is required'),
+    body('provider').isIn(['google', 'github', 'microsoft', 'facebook', 'linkedin', 'credentials']).withMessage('Valid provider is required'),
+    body('interests').optional().isArray().withMessage('Interests must be an array'),
+    body('education').optional().isString().withMessage('Education must be a string'),
   ],
   async (req: Request, res: Response): Promise<any> => {
     const errors = validationResult(req);
@@ -21,7 +23,7 @@ router.post(
     }
 
     try {
-      const { name, email, oauthId, provider } = req.body;
+      const { name, email, oauthId, provider, interests, education } = req.body;
 
       let user = await User.findOne({ email });
       let isNew = false;
@@ -29,6 +31,8 @@ router.post(
       if (user) {
         user.oauthId = oauthId;
         user.provider = provider;
+        if (Array.isArray(interests)) user.interests = interests;
+        if (typeof education === 'string') user.education = education;
         await user.save();
       } else {
         user = new User({
@@ -36,6 +40,8 @@ router.post(
           email,
           oauthId,
           provider,
+          interests: Array.isArray(interests) ? interests : [],
+          education,
         });
         await user.save();
         isNew = true;

@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Award, Briefcase, ChevronRight, BarChart3, RefreshCw, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Award, Briefcase, ChevronRight, BarChart3, RefreshCw, AlertCircle, CheckCircle2, TrendingUp, Sparkles, DollarSign } from "lucide-react";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
-import { AssessmentResults, CareerRecommendation, SkillGap } from "../../types/assessment";
+import { AssessmentResults, CareerRecommendation, SkillGap, SkillImprovement } from "../../types/assessment";
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
@@ -42,6 +42,20 @@ export default function ResultsPage() {
   const { skillProfile, scoreDetails, recommendations } = results;
   const { overallLevel } = skillProfile;
   const badgeColor = LEVEL_COLORS[overallLevel.toLowerCase()] || LEVEL_COLORS["beginner"];
+  const recommendationList = Array.isArray(recommendations)
+    ? recommendations
+    : recommendations?.recommendations || [];
+  const skillsToImprove: SkillImprovement[] = results.skillsToImprove
+    || (!Array.isArray(recommendations) ? recommendations?.skillsToImprove : undefined)
+    || scoreDetails.per_skill_breakdown
+      .filter((skill: any) => Number(skill.weighted_score) < 75)
+      .sort((a: any, b: any) => Number(a.weighted_score) - Number(b.weighted_score))
+      .slice(0, 5)
+      .map((skill: any) => ({
+        skill: skill.skill,
+        currentScore: Number(skill.weighted_score) || 0,
+        reason: "Practice this area to improve your assessment readiness."
+      }));
 
   const handleRetake = () => {
     sessionStorage.removeItem("assessmentSessionId");
@@ -131,6 +145,25 @@ export default function ResultsPage() {
               </div>
             </div>
 
+            {skillsToImprove.length > 0 && (
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <h3 className="text-xl font-bold text-slate-900 mb-5 flex items-center gap-2">
+                  <AlertCircle className="text-amber-500 w-5 h-5" /> Skills to Improve
+                </h3>
+                <div className="space-y-4">
+                  {skillsToImprove.map((item) => (
+                    <div key={item.skill} className="rounded-xl border border-amber-100 bg-amber-50 p-4">
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <span className="font-bold text-slate-900">{item.skill}</span>
+                        <span className="text-sm font-semibold text-amber-700">{item.currentScore}%</span>
+                      </div>
+                      <p className="text-sm leading-relaxed text-slate-700">{item.reason}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
           </div>
 
           {/* RIGHT COLUMN: Careers */}
@@ -139,7 +172,15 @@ export default function ResultsPage() {
               <Briefcase className="text-blue-600" /> Top Career Matches
             </h3>
             
-            {recommendations.length > 0 ? recommendations.map((rec: CareerRecommendation) => (
+            {recommendationList.length > 0 ? recommendationList.map((rec: CareerRecommendation) => {
+              const skillGap = rec.skill_gap || [];
+              const hybridScore = rec.finalScore ?? rec.final_hybrid_score ?? rec.compatibility_score ?? 0;
+              const marketDemand = rec.marketDemand ?? rec.market_demand;
+              const interestAlignment = rec.interestAlignment ?? rec.interest_alignment ?? 0;
+              const semanticScore = rec.semanticScore ?? rec.semantic_match ?? 0;
+              const compatibility = rec.compatibility ?? rec.compatibility_score ?? 0;
+
+              return (
               <div key={rec.role} className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200 hover:border-blue-300 transition-colors">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
                   
@@ -154,28 +195,50 @@ export default function ResultsPage() {
                     <div className="flex flex-wrap gap-2 mb-4 mt-3">
                       <span className={cn(
                         "px-3 py-1 rounded-full text-xs font-bold uppercase",
-                        rec.readiness_label.includes("Ready") && !rec.readiness_label.includes("preparation") ? "bg-emerald-100 text-emerald-800" :
-                        rec.readiness_label.includes("Almost") ? "bg-blue-100 text-blue-800" :
+                        (rec.readiness_label || "").includes("Ready") && !(rec.readiness_label || "").includes("preparation") ? "bg-emerald-100 text-emerald-800" :
+                        (rec.readiness_label || "").includes("Almost") ? "bg-blue-100 text-blue-800" :
                         "bg-amber-100 text-amber-800"
                       )}>
-                        {rec.readiness_label}
+                        {rec.readiness_label || "Recommended"}
                       </span>
-                      <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-semibold">
-                        Demand Score: {rec.demand_score}/100
-                      </span>
+                      {marketDemand !== undefined && (
+                        <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-semibold flex items-center gap-1">
+                          <TrendingUp className="w-3 h-3" /> Demand: {marketDemand}/100
+                        </span>
+                      )}
+                      {rec.salary_min !== undefined && rec.salary_max !== undefined && rec.salary_min > 0 && (
+                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold flex items-center gap-1">
+                          <DollarSign className="w-3 h-3" /> 
+                          £{(rec.salary_min / 1000).toFixed(0)}k - £{(rec.salary_max / 1000).toFixed(0)}k
+                        </span>
+                      )}
+                      {rec.trending_skills && rec.trending_skills.length > 0 && (
+                        <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">
+                          Hot: {rec.trending_skills.slice(0, 2).join(', ')}
+                        </span>
+                      )}
                     </div>
                     
-                    <p className="text-slate-600 text-sm leading-relaxed mb-6">
+                    <p className="text-slate-600 text-sm leading-relaxed mb-4">
                       {rec.description}
                     </p>
 
-                    {rec.skill_gap.length > 0 ? (
+                    {rec.explanation && (
+                      <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                        <p className="text-sm text-indigo-900 font-medium flex items-start gap-2">
+                          <Sparkles className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
+                          <span>{rec.explanation}</span>
+                        </p>
+                      </div>
+                    )}
+
+                    {skillGap.length > 0 ? (
                       <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                         <h5 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
                           <AlertCircle className="w-4 h-4 text-amber-500" /> Focus Areas to Improve
                         </h5>
                         <div className="grid sm:grid-cols-2 gap-3">
-                          {rec.skill_gap.map((gap: SkillGap) => (
+                          {skillGap.map((gap: SkillGap) => (
                             <div key={gap.skill} className="flex justify-between items-center text-sm">
                               <span className="font-medium text-slate-700">{gap.skill}</span>
                               <span className="text-slate-500">
@@ -192,18 +255,46 @@ export default function ResultsPage() {
                     )}
                   </div>
 
-                  <div className="shrink-0 flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div className="shrink-0 flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl border border-slate-100 w-full sm:w-48">
                     <div className="text-4xl font-extrabold text-blue-600 mb-1">
-                      {rec.compatibility_score}%
+                      {hybridScore}%
                     </div>
-                    <div className="text-xs font-bold text-slate-500 uppercase tracking-widest text-center">
-                      Match<br/>Score
+                    <div className="text-xs font-bold text-slate-500 uppercase tracking-widest text-center mb-4">
+                      Hybrid Match
                     </div>
+                    
+                    {hybridScore !== undefined && (
+                      <div className="w-full space-y-2">
+                        <div className="flex justify-between items-center text-[10px] font-semibold text-slate-500">
+                          <span>Skills</span>
+                          <span>{compatibility}%</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-400 rounded-full" style={{width: `${compatibility}%`}} />
+                        </div>
+                        
+                        <div className="flex justify-between items-center text-[10px] font-semibold text-slate-500">
+                          <span>Interest</span>
+                          <span>{interestAlignment}%</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                          <div className="h-full bg-indigo-400 rounded-full" style={{width: `${interestAlignment}%`}} />
+                        </div>
+
+                        <div className="flex justify-between items-center text-[10px] font-semibold text-slate-500">
+                          <span>AI Match</span>
+                          <span>{semanticScore}%</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                          <div className="h-full bg-purple-400 rounded-full" style={{width: `${semanticScore}%`}} />
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                 </div>
               </div>
-            )) : (
+            );}) : (
               <div className="bg-white rounded-2xl p-8 text-center text-slate-500 border border-slate-200 shadow-sm">
                 No career recommendations found for this profile.
               </div>
