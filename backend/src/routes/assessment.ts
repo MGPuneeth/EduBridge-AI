@@ -9,6 +9,7 @@ import Career from '../models/Career';
 
 const router = Router();
 const FASTAPI_BASE_URL = process.env.FASTAPI_BASE_URL || 'http://localhost:8000';
+const AI_REQUEST_TIMEOUT_MS = Number(process.env.AI_REQUEST_TIMEOUT_MS || 30000);
 
 // POST /api/assessment/start
 router.post(
@@ -40,10 +41,14 @@ router.post(
         aiResponse = await axios.post(`${FASTAPI_BASE_URL}/api/generate-questions`, {
           domain,
           skills
+        }, {
+          timeout: AI_REQUEST_TIMEOUT_MS
         });
       } catch (error) {
         const detail = axios.isAxiosError(error)
-          ? error.response?.data?.detail || error.response?.data?.error || error.message
+          ? error.code === 'ECONNABORTED'
+            ? `AI service timed out after ${AI_REQUEST_TIMEOUT_MS / 1000}s`
+            : error.response?.data?.detail || error.response?.data?.error || error.message
           : 'AI service unavailable';
 
         console.error('Error calling AI service (/generate-questions):', detail);

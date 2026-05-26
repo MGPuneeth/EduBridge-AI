@@ -8,7 +8,14 @@ import {
   Career
 } from '../types/assessment';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const configuredApiBase =
+  process.env.NEXT_PUBLIC_API_URL ||
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  'http://localhost:3001';
+
+const API_BASE = configuredApiBase.endsWith('/api')
+  ? configuredApiBase
+  : `${configuredApiBase.replace(/\/$/, '')}/api`;
 
 async function parseError(response: Response, fallback: string): Promise<Error> {
   try {

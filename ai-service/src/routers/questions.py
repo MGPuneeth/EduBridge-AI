@@ -1,3 +1,4 @@
+import asyncio
 import json
 import random
 import re
@@ -5,16 +6,16 @@ from typing import List
 from fastapi import APIRouter, HTTPException
 import os
 from pydantic import BaseModel
-import google.generativeai as genai
+from google import genai
 import httpx
 
 router = APIRouter()
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+GEMINI_TIMEOUT_SECONDS = int(os.getenv("GEMINI_TIMEOUT_SECONDS", "20"))
 
-def get_gemini_model():
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-    return genai.GenerativeModel('gemini-2.5-flash')
+def get_gemini_client():
+    return genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 class GenerateQuestionsRequest(BaseModel):
     domain: str
@@ -168,8 +169,14 @@ Format:
 
     for attempt in range(2):
         try:
-            model = get_gemini_model()
-            response = await model.generate_content_async(prompt)
+            client = get_gemini_client()
+            response = await asyncio.wait_for(
+                client.aio.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=prompt,
+                ),
+                timeout=GEMINI_TIMEOUT_SECONDS,
+            )
             questions = parse_questions(response.text)
             if questions:
                 return questions[:6]
@@ -192,9 +199,12 @@ Format:
 async def generate_questions(request: GenerateQuestionsRequest):
     skill_str = ", ".join(request.skills) if request.skills else "general concepts"
     
-    results = []
-    for difficulty in ["beginner", "intermediate", "expert"]:
-        results.append(await generate_questions_for_difficulty(skill_str, difficulty, request.domain))
+    results = await asyncio.gather(
+        *[
+            generate_questions_for_difficulty(skill_str, difficulty, request.domain)
+            for difficulty in ["beginner", "intermediate", "expert"]
+        ]
+    )
     
     all_questions = []
     for res in results:
