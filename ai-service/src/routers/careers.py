@@ -80,7 +80,7 @@ async def generate_dynamic_careers(request: RecommendCareersRequest) -> List[Car
     ]
     prompt = f"""
 You are an expert technical career architect.
-Generate 6 realistic technology career roles for this learner.
+Generate 3 realistic technology career roles for this learner.
 
 Skill scores: {json.dumps(request.skill_scores)}
 Skill levels: {json.dumps(request.level_per_skill)}
