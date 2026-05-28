@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Award, Briefcase, BarChart3, RefreshCw, AlertCircle, CheckCircle2, TrendingUp, Sparkles, DollarSign, Target, Gauge, Layers3 } from "lucide-react";
+import { Award, Briefcase, BarChart3, RefreshCw, AlertCircle, CheckCircle2, TrendingUp, Sparkles, DollarSign, Target, Gauge, Layers3, BookOpenCheck } from "lucide-react";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import { AssessmentResults, CareerRecommendation, SkillGap, SkillImprovement } from "../../types/assessment";
@@ -398,10 +398,16 @@ export default function ResultsPage() {
               </div>
             )}
 
-            <div className="pt-8 flex justify-center">
+            <div className="pt-8 flex flex-col sm:flex-row justify-center gap-4">
+              <button 
+                onClick={() => router.push("/learning-path")}
+                className="px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+              >
+                <BookOpenCheck className="w-5 h-5" /> View My Learning Path
+              </button>
               <button 
                 onClick={handleRetake}
-                className="px-8 py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition-all shadow-md flex items-center gap-2"
+                className="px-8 py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
               >
                 <RefreshCw className="w-5 h-5" /> Retake Assessment
               </button>

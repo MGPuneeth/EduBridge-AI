@@ -114,6 +114,43 @@ export interface CareerRecommendation {
   explanation?: string;
 }
 
+export interface LearningPathModule {
+  week: number;
+  skill: string;
+  priority: string;
+  currentScore: number;
+  targetScore: number;
+  gap: number;
+  marketRelevance: number;
+  sourceRoles: string[];
+  title: string;
+  provider: string;
+  type: string;
+  level: string;
+  durationHours: number;
+  url: string;
+  topics: string[];
+  practiceTask: string;
+  checkpoint: string;
+  weeklyGoal?: string;
+  whyImportant?: string;
+  aiGenerated?: boolean;
+}
+
+export interface LearningPathAgentOutput {
+  agentName: string;
+  dependsOn: string;
+  assessmentDomain: string;
+  targetRole: string;
+  readinessScore: number;
+  totalModules: number;
+  estimatedTotalHours: number;
+  estimatedWeeks: number;
+  summary: string;
+  modules: LearningPathModule[];
+  aiGenerated?: boolean;
+}
+
 export interface AssessmentResults {
   skillProfile: SkillProfile;
   scoreDetails: {
@@ -128,9 +165,11 @@ export interface AssessmentResults {
     overall_level?: string;
     skillsToImprove?: SkillImprovement[];
     skillGapAnalysis?: SkillGapAgentAnalysis;
+    learningPath?: LearningPathAgentOutput;
   } | CareerRecommendation[];
   skillsToImprove?: SkillImprovement[];
   skillGapAnalysis?: SkillGapAgentAnalysis;
+  learningPath?: LearningPathAgentOutput;
 }
 
 export interface SyncUserPayload {

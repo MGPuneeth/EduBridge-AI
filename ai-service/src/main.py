@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from src.routers import questions, scoring, careers, skill_gap
+from src.routers import questions, scoring, careers, skill_gap, learning_path
 
 load_dotenv()
 
@@ -40,3 +40,4 @@ app.include_router(questions.router, prefix="/api", tags=["questions"])
 app.include_router(scoring.router, prefix="/api", tags=["scoring"])
 app.include_router(careers.router, prefix="/api", tags=["careers"])
 app.include_router(skill_gap.router, prefix="/api", tags=["skill-gap"])
+app.include_router(learning_path.router, prefix="/api", tags=["learning-path"])
