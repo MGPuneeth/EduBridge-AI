@@ -1,0 +1,13 @@
+* [33m28ca26a[m[33m ([m[1;31morigin/main_fr3[m[33m, [m[1;32mmain_fr3[m[33m)[m Upadated learning path generation agent
+* [33med78814[m Updated Functional Requirement 3 - Learning path generator
+* [33mf76934a[m[33m ([m[1;31morigin/main_fr2[m[33m)[m Delete ai-service/env
+* [33m51cc026[m Delete backend/env
+* [33m0498e3a[m Changes
+* [33m4263641[m Detected secret file
+* [33m349fe19[m Update .gitignore
+* [33m63c2843[m FR2 REQUIREMENT
+* [33m3ce0fe8[m[33m ([m[1;31morigin/main_fr4[m[33m)[m FR4
+* [33m1fde00a[m market trend added
+[32m|[m * [33m66e724c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Updated some changes in questions generation agent
+[32m|[m[32m/[m  
+* [33m77fd9d3[m Built Oauth authentication and assessment agent for new users
