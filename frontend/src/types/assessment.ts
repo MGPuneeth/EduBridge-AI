@@ -35,14 +35,120 @@ export interface SkillGap {
   gap: number;
 }
 
+export interface SkillImprovement {
+  skill: string;
+  currentScore: number;
+  reason: string;
+}
+
+export interface SkillGapAgentMissingSkill {
+  skill: string;
+  userScore: number;
+  requiredScore: number;
+  gap: number;
+  sourceRoles: string[];
+  marketRelevance: number;
+  priority: 'critical' | 'high' | 'medium' | 'low';
+}
+
+export interface SkillGapAgentAnalysis {
+  agentName: string;
+  assessmentDomain: string;
+  overallGapPercentage: number;
+  readinessScore: number;
+  gapLevel: 'critical' | 'high' | 'moderate' | 'low';
+  missingSkills: SkillGapAgentMissingSkill[];
+  requiredCareerSkillsCompared: {
+    domain: string;
+    role: string;
+    requiredSkills: Record<string, number>;
+  }[];
+  roleGapSummary?: {
+    role: string;
+    domain: string;
+    averageGap: number;
+    readinessScore: number;
+  }[];
+  marketDomainsCompared: {
+    domain: string;
+    roles: string[];
+    trendingSkills: string[];
+    marketDemand: number;
+  }[];
+  marketDrivenSkills: {
+    skill: string;
+    domain: string;
+    marketDemand: number;
+    userScore: number;
+  }[];
+  summary: string;
+}
+
 export interface CareerRecommendation {
   rank: number;
   role: string;
+  compatibility?: number;
   compatibility_score: number;
   readiness_label: string;
   demand_score: number;
   description: string;
   skill_gap: SkillGap[];
+  marketDemand?: number;
+  semanticScore?: number;
+  interestAlignment?: number;
+  finalScore?: number;
+  salaryRange?: { min: number; max: number } | null;
+  marketTrend?: {
+    totalJobs: number;
+    remotePercentage: number;
+    trendingSkills: string[];
+  };
+  missingSkills?: string[];
+  final_hybrid_score?: number;
+  market_demand?: number;
+  salary_min?: number;
+  salary_max?: number;
+  interest_alignment?: number;
+  semantic_match?: number;
+  trending_skills?: string[];
+  explanation?: string;
+}
+
+export interface LearningPathModule {
+  week: number;
+  skill: string;
+  priority: string;
+  currentScore: number;
+  targetScore: number;
+  gap: number;
+  marketRelevance: number;
+  sourceRoles: string[];
+  title: string;
+  provider: string;
+  type: string;
+  level: string;
+  durationHours: number;
+  url: string;
+  topics: string[];
+  practiceTask: string;
+  checkpoint: string;
+  weeklyGoal?: string;
+  whyImportant?: string;
+  aiGenerated?: boolean;
+}
+
+export interface LearningPathAgentOutput {
+  agentName: string;
+  dependsOn: string;
+  assessmentDomain: string;
+  targetRole: string;
+  readinessScore: number;
+  totalModules: number;
+  estimatedTotalHours: number;
+  estimatedWeeks: number;
+  summary: string;
+  modules: LearningPathModule[];
+  aiGenerated?: boolean;
 }
 
 export interface AssessmentResults {
@@ -53,7 +159,17 @@ export interface AssessmentResults {
     tier_breakdown: Record<string, { correct: number; total: number; score: number }>;
     per_skill_breakdown: any[];
   };
-  recommendations: CareerRecommendation[];
+  recommendations: {
+    recommendations: CareerRecommendation[];
+    top_recommendation?: string | null;
+    overall_level?: string;
+    skillsToImprove?: SkillImprovement[];
+    skillGapAnalysis?: SkillGapAgentAnalysis;
+    learningPath?: LearningPathAgentOutput;
+  } | CareerRecommendation[];
+  skillsToImprove?: SkillImprovement[];
+  skillGapAnalysis?: SkillGapAgentAnalysis;
+  learningPath?: LearningPathAgentOutput;
 }
 
 export interface SyncUserPayload {
@@ -61,6 +177,8 @@ export interface SyncUserPayload {
   email: string;
   oauthId: string;
   provider: string;
+  interests?: string[];
+  education?: string;
 }
 
 export interface SyncUserResponse {

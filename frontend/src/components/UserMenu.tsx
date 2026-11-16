@@ -7,21 +7,29 @@ export default function UserMenu() {
   const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
 
-  if (status === "loading") return <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200"></div>;
+  if (status === "loading")
+    return (
+      <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200"></div>
+    );
   if (!session?.user) return null;
 
   return (
-    <div className="relative">
+    <div className=" sticky">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 rounded-full border border-gray-200 bg-white p-1 hover:shadow-md focus:outline-none"
       >
         <img
-          src={session.user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user.name || "User")}`}
+          src={
+            session.user.image ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user.name || "User")}`
+          }
           alt="Avatar"
           className="h-8 w-8 rounded-full"
         />
-        <span className="hidden pr-2 text-sm font-medium sm:block">{session.user.name}</span>
+        <span className="hidden pr-2 text-sm font-medium sm:block">
+          {session.user.name}
+        </span>
       </button>
 
       {isOpen && (

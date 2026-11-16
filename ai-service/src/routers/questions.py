@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException
 import os
 from pydantic import BaseModel
 from google import genai
+from google.genai import types
 import httpx
 
 router = APIRouter()
@@ -71,7 +72,7 @@ def fallback_questions(skill: str, difficulty: str, domain: str) -> List[dict]:
             "question": f"{question}\n\nContext: {topic}",
             "options": question_options,
             "correct_answer": correct,
-            "explanation": "This fallback question is used when the Gemini API quota is exhausted.",
+            "explanation": "This fallback question is used when AI question providers are unavailable.",
             "skill": topic,
             "difficulty": difficulty
         })
@@ -174,6 +175,10 @@ Format:
                 client.aio.models.generate_content(
                     model="gemini-2.5-flash",
                     contents=prompt,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        temperature=0.7,
+                    ),
                 ),
                 timeout=GEMINI_TIMEOUT_SECONDS,
             )
@@ -215,7 +220,7 @@ async def generate_questions(request: GenerateQuestionsRequest):
     random.shuffle(all_questions)
     
     if not all_questions:
-        raise HTTPException(status_code=500, detail="Failed to generate questions. Ensure GEMINI_API_KEY is valid.")
+        raise HTTPException(status_code=500, detail="Failed to generate questions. Check GEMINI_API_KEY and GROQ_API_KEY.")
         
     return {
         "questions": all_questions,

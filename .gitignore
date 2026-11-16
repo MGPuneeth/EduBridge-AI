@@ -1,4 +1,8 @@
 node_modules/
+.tools/
+.npm-cache/
+.venv/
+frontend/env.download
 .env
 .env.local
 __pycache__/

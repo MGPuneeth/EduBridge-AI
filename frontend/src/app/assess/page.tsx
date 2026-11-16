@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -26,7 +27,15 @@ const EDUCATION_LEVELS = [
   "High School", "Undergraduate", "Postgraduate", "Professional"
 ];
 
-export default function AssessPage() {
+function getAuthProvider(user: any) {
+  return user.provider || "github";
+}
+
+function getOAuthId(user: any) {
+  return user.providerAccountId || user.id || user.email || "";
+}
+
+function AssessPageContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -49,8 +58,8 @@ export default function AssessPage() {
         const syncRes = await syncUser({
           name: user.name || "Unknown",
           email: user.email || "",
-          oauthId: user.id || user.email || "",
-          provider: "google"
+          oauthId: getOAuthId(user),
+          provider: getAuthProvider(user)
         });
 
         sessionStorage.setItem("userId", syncRes.userId);
@@ -89,8 +98,10 @@ export default function AssessPage() {
       const syncRes = await syncUser({
         name: session.user.name || "Unknown",
         email: session.user.email,
-        oauthId: session.user.id || session.user.email,
-        provider: "google"
+        oauthId: getOAuthId(session.user),
+        provider: getAuthProvider(session.user),
+        interests,
+        education
       });
 
       // 2. Start Assessment
@@ -293,5 +304,17 @@ export default function AssessPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AssessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-slate-50">
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+      </div>
+    }>
+      <AssessPageContent />
+    </Suspense>
   );
 }

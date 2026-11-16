@@ -5,7 +5,7 @@ export interface IUser {
   email: string;
   interests: string[];
   education: string;
-  provider: 'google' | 'github' | 'microsoft' | 'facebook' | 'linkedin';
+  provider: 'google' | 'github' | 'microsoft' | 'facebook' | 'linkedin' | 'credentials';
   oauthId: string;
   createdAt: Date;
 }
@@ -46,4 +46,20 @@ export interface ISession {
   userId: ObjectId;
   questions: any[];
   createdAt: Date;
+}
+
+export interface IJobMarketTrend {
+  role: string;
+  demandScore: number;
+  totalJobs: number;
+  avgSalary: number;
+  trendingSkills: string[];
+  remotePercentage: number;
+  updatedAt: Date;
+}
+
+export interface IRecommendationHistory {
+  userId: ObjectId;
+  recommendations: any[];
+  generatedAt: Date;
 }

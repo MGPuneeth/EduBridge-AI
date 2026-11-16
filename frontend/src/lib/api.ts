@@ -5,17 +5,18 @@ import {
   StartAssessmentResponse,
   SubmitAssessmentPayload,
   SubmitAssessmentResponse,
-  Career
+  Career,
+  SkillGapAgentAnalysis
 } from '../types/assessment';
 
 const configuredApiBase =
   process.env.NEXT_PUBLIC_API_URL ||
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  'http://localhost:3001';
+  "http://localhost:3001";
 
-const API_BASE = configuredApiBase.endsWith('/api')
+const API_BASE = configuredApiBase.endsWith("/api")
   ? configuredApiBase
-  : `${configuredApiBase.replace(/\/$/, '')}/api`;
+  : `${configuredApiBase.replace(/\/$/, "")}/api`;
 
 async function parseError(response: Response, fallback: string): Promise<Error> {
   try {
@@ -67,5 +68,14 @@ export async function getCareers(): Promise<Career[]> {
     headers: { 'Content-Type': 'application/json' },
   });
   if (!response.ok) throw await parseError(response, 'Failed to fetch careers');
+  return response.json();
+}
+
+export async function getLatestSkillGap(userId: string): Promise<SkillGapAgentAnalysis> {
+  const response = await fetch(`${API_BASE}/skill-gap/latest/${userId}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!response.ok) throw await parseError(response, 'Failed to fetch skill gap analysis');
   return response.json();
 }

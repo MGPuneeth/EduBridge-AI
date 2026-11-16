@@ -33,6 +33,7 @@ export default function Home() {
       <div className="max-w-4xl w-full text-center space-y-8 mt-10">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 text-blue-700 font-medium text-sm border border-blue-200 shadow-sm">
           <Brain className="w-4 h-4" />
+          <span>Powered by AI</span>
         </div>
 
         <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight">
