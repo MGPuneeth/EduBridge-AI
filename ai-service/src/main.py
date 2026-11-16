@@ -3,9 +3,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from src.routers import questions, scoring, careers, skill_gap, learning_path
-
 load_dotenv()
+
+from src.routers import questions, scoring, careers, skill_gap, learning_path
 
 app = FastAPI(title="EduBridge AI - AI Service")
 
